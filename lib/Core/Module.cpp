@@ -15,8 +15,8 @@
 #include "eld/Input/BitcodeFile.h"
 #include "eld/Input/ELFObjectFile.h"
 #include "eld/Input/InternalInputFile.h"
-#include "eld/LayoutMap/TextLayoutPrinter.h"
-#include "eld/LayoutMap/YamlLayoutPrinter.h"
+#include "eld/LayoutMap/TextLayoutInfo.h"
+#include "eld/LayoutMap/YamlLayoutInfo.h"
 #include "eld/Object/ObjectLinker.h"
 #include "eld/Plugin/PluginData.h"
 #include "eld/PluginAPI/PluginConfig.h"
@@ -44,31 +44,31 @@ using namespace eld;
 // Module
 //===----------------------------------------------------------------------===//
 Module::Module(LinkerScript &CurScript, LinkerConfig &Config,
-               LayoutPrinter *LayoutPrinter)
+               LayoutInfo *LayoutInfo)
     : UserLinkerScript(CurScript), ThisConfig(Config), DotSymbol(nullptr),
-      Linker(nullptr), ThisLayoutPrinter(LayoutPrinter), Failure(false),
+      Linker(nullptr), ThisLayoutInfo(LayoutInfo), Failure(false),
       UsesLto(false), Saver(BAlloc), PM(CurScript, *Config.getDiagEngine(),
                                         Config.options().printTimingStats()),
       SymbolNamePool(Config, PM) {
   State = plugin::LinkerWrapper::Initializing;
   if (Config.options().isLTOCacheEnabled())
     UserLinkerScript.setHashingEnabled();
-  UserLinkerScript.createSectionMap(CurScript, Config, LayoutPrinter);
+  UserLinkerScript.createSectionMap(CurScript, Config, LayoutInfo);
   Printer = ThisConfig.getPrinter();
   if (ThisConfig.shouldCreateReproduceTar())
     createOutputTarWriter();
 }
 
 Module::Module(const std::string &Name, LinkerScript &CurScript,
-               LinkerConfig &Config, LayoutPrinter *LayoutPrinter)
+               LinkerConfig &Config, LayoutInfo *LayoutInfo)
     : UserLinkerScript(CurScript), ThisConfig(Config), DotSymbol(nullptr),
-      Linker(nullptr), ThisLayoutPrinter(LayoutPrinter), Failure(false),
+      Linker(nullptr), ThisLayoutInfo(LayoutInfo), Failure(false),
       UsesLto(false), Saver(BAlloc), PM(CurScript, *Config.getDiagEngine(),
                                         Config.options().printTimingStats()),
       SymbolNamePool(Config, PM) {
   if (Config.options().isLTOCacheEnabled())
     UserLinkerScript.setHashingEnabled();
-  UserLinkerScript.createSectionMap(CurScript, Config, LayoutPrinter);
+  UserLinkerScript.createSectionMap(CurScript, Config, LayoutInfo);
   Printer = ThisConfig.getPrinter();
 }
 
@@ -504,7 +504,7 @@ llvm::StringRef Module::getStateStr() const {
 void Module::addSymbolCreatedByPluginToFragment(Fragment *F, std::string Symbol,
                                                 uint64_t Val,
                                                 const eld::Plugin *Plugin) {
-  LayoutPrinter *LP = getLayoutPrinter();
+  LayoutInfo *LP = getLayoutInfo();
   LDSymbol *S = SymbolNamePool.createPluginSymbol(
       getInternalInput(Module::InternalInputType::Plugin), Symbol, F, Val, LP);
   if (S && LP && LP->showSymbolResolution())
@@ -521,7 +521,7 @@ void Module::addSymbolCreatedByPluginToFragment(Fragment *F, std::string Symbol,
 Fragment *Module::createPluginFillFragment(std::string PluginName,
                                            uint32_t Alignment,
                                            uint32_t PaddingSize) {
-  LayoutPrinter *P = getLayoutPrinter();
+  LayoutInfo *P = getLayoutInfo();
   ELFSection *InputSect = getScript().sectionMap().createELFSection(
       ".bss.paddingchunk." + PluginName, LDFileFormat::Regular,
       llvm::ELF::SHT_PROGBITS, llvm::ELF::SHF_ALLOC, /*EntSize=*/0);
@@ -539,7 +539,7 @@ Fragment *Module::createPluginFillFragment(std::string PluginName,
 Fragment *Module::createPluginCodeFragment(std::string PluginName,
                                            std::string Name, uint32_t Alignment,
                                            const char *Buf, size_t Sz) {
-  LayoutPrinter *P = getLayoutPrinter();
+  LayoutInfo *P = getLayoutInfo();
   ELFSection *InputSect = getScript().sectionMap().createELFSection(
       ".text.codechunk." + Name + "." + PluginName, LDFileFormat::Internal,
       llvm::ELF::SHT_PROGBITS, llvm::ELF::SHF_ALLOC | llvm::ELF::SHF_EXECINSTR,
@@ -557,7 +557,7 @@ Fragment *Module::createPluginCodeFragment(std::string PluginName,
 Fragment *Module::createPluginDataFragmentWithCustomName(
     const std::string &PluginName, std::string Name, uint32_t Alignment,
     const char *Buf, size_t Sz) {
-  LayoutPrinter *P = getLayoutPrinter();
+  LayoutInfo *P = getLayoutInfo();
   ELFSection *InputSect = getScript().sectionMap().createELFSection(
       Name, LDFileFormat::Internal, llvm::ELF::SHT_PROGBITS,
       llvm::ELF::SHF_ALLOC | llvm::ELF::SHF_WRITE, /*EntSize=*/0);
@@ -583,7 +583,7 @@ Fragment *Module::createPluginDataFragment(std::string PluginName,
 Fragment *Module::createPluginBSSFragment(std::string PluginName,
                                           std::string Name, uint32_t Alignment,
                                           size_t Sz) {
-  LayoutPrinter *P = getLayoutPrinter();
+  LayoutInfo *P = getLayoutInfo();
   ELFSection *InputSect = getScript().sectionMap().createELFSection(
       ".data.bsschunk." + Name + "." + PluginName, LDFileFormat::Internal,
       llvm::ELF::SHT_NOBITS, llvm::ELF::SHF_ALLOC | llvm::ELF::SHF_WRITE,
@@ -601,7 +601,7 @@ Fragment *
 Module::createPluginFragmentWithCustomName(std::string Name, size_t SectType,
                                            size_t SectFlags, uint32_t Alignment,
                                            const char *Buf, size_t Sz) {
-  LayoutPrinter *P = getLayoutPrinter();
+  LayoutInfo *P = getLayoutInfo();
   ELFSection *InputSect = getScript().sectionMap().createELFSection(
       Name, LDFileFormat::Internal, SectType, SectFlags, /*EntSize=*/0);
   InputSect->setAddrAlign(Alignment);
@@ -732,28 +732,28 @@ llvm::StringRef Module::saveString(std::string S) { return Saver.save(S); }
 
 llvm::StringRef Module::saveString(llvm::StringRef S) { return Saver.save(S); }
 
-bool Module::checkAndRaiseLayoutPrinterDiagEntry(eld::Expected<void> E) const {
+bool Module::checkAndRaiseLayoutInfoDiagEntry(eld::Expected<void> E) const {
   if (E)
     return true;
   ThisConfig.getDiagEngine()->raiseDiagEntry(std::move(E.error()));
   return false;
 }
 
-bool Module::createLayoutPrintersForMapStyle(llvm::StringRef MapStyle) {
-  if (!ThisLayoutPrinter)
+bool Module::createLayoutInfosForMapStyle(llvm::StringRef MapStyle) {
+  if (!ThisLayoutInfo)
     return true;
   // Text
   if (MapStyle.empty() || MapStyle.equals_insensitive("llvm") ||
       MapStyle.equals_insensitive("gnu") ||
       MapStyle.equals_insensitive("txt")) {
-    TextMapPrinter = eld::make<eld::TextLayoutPrinter>(ThisLayoutPrinter);
-    return checkAndRaiseLayoutPrinterDiagEntry(TextMapPrinter->init());
+    TextMapPrinter = eld::make<eld::TextLayoutInfo>(ThisLayoutInfo);
+    return checkAndRaiseLayoutInfoDiagEntry(TextMapPrinter->init());
   }
   // YAML
   if (MapStyle.equals_insensitive("yaml") ||
       MapStyle.equals_insensitive("compressed")) {
-    YamlMapPrinter = eld::make<eld::YamlLayoutPrinter>(ThisLayoutPrinter);
-    return checkAndRaiseLayoutPrinterDiagEntry(YamlMapPrinter->init());
+    YamlMapPrinter = eld::make<eld::YamlLayoutInfo>(ThisLayoutInfo);
+    return checkAndRaiseLayoutInfoDiagEntry(YamlMapPrinter->init());
   }
   return true;
 }

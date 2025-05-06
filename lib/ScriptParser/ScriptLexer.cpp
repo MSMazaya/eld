@@ -116,7 +116,7 @@ void ScriptLexer::lex() {
       ActiveFilenames.erase(CurBuf.Filename);
       ThisScriptFile.popScriptStack();
       CurBuf = Buffers.pop_back_val();
-      LayoutPrinter *LP = ThisScriptFile.module().getLayoutPrinter();
+      LayoutInfo *LP = ThisScriptFile.module().getLayoutInfo();
       if (LP)
         LP->closeLinkerScript();
       continue;

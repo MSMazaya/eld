@@ -23,8 +23,8 @@
 #include "eld/Config/LinkerConfig.h"
 #include "eld/Input/JustSymbolsAction.h"
 #include "eld/Input/ZOption.h"
-#include "eld/LayoutMap/TextLayoutPrinter.h"
-#include "eld/LayoutMap/YamlLayoutPrinter.h"
+#include "eld/LayoutMap/TextLayoutInfo.h"
+#include "eld/LayoutMap/YamlLayoutInfo.h"
 #include "eld/Support/MappingFileReader.h"
 #include "eld/Support/MsgHandling.h"
 #include "eld/Support/OutputTarWriter.h"
@@ -479,7 +479,7 @@ bool GnuLdDriver::processOptions(llvm::opt::InputArgList &Args) {
 
   // -MapDetail
   for (llvm::opt::Arg *arg : Args.filtered(T::MapDetail)) {
-    eld::Expected<void> E = eld::LayoutPrinter::setLayoutDetail(
+    eld::Expected<void> E = eld::LayoutInfo::setLayoutDetail(
         arg->getValue(), Config.getDiagEngine());
     if (!E) {
       Config.raiseDiagEntry(std::move(E.error()));
@@ -1585,10 +1585,10 @@ bool GnuLdDriver::doLink(llvm::opt::InputArgList &Args,
   std::unique_ptr<eld::ELDTargetMachine> target_machine(
       ELDTarget->createTargetMachine(Config.targets().triple().getTriple(),
                                      *LLVMTarget));
-  eld::LayoutPrinter *layoutPrinter = nullptr;
+  eld::LayoutInfo *layoutInfo = nullptr;
   if (!Config.options().layoutFile().empty() || Config.options().printMap())
-    layoutPrinter = eld::make<eld::LayoutPrinter>(Config);
-  ThisModule = eld::make<eld::Module>(m_Script, Config, layoutPrinter);
+    layoutInfo = eld::make<eld::LayoutInfo>(Config);
+  ThisModule = eld::make<eld::Module>(m_Script, Config, layoutInfo);
 
   // Handle Map Style and set default MapStyle
   llvm::ArrayRef<std::string> MapStyles = Config.options().mapStyle();
@@ -1596,15 +1596,15 @@ bool GnuLdDriver::doLink(llvm::opt::InputArgList &Args,
     Config.options().setDefaultMapStyle(MapStyles[0]);
     if (Config.options().checkAndUpdateMapStyleForPrintMap())
       MapStyles = Config.options().mapStyle();
-    // Create LayoutPrinters.
+    // Create LayoutInfos.
     Config.raise(Diag::mapstyles_used) << llvm::join(MapStyles, ",");
     for (auto &Style : MapStyles) {
-      if (!ThisModule->createLayoutPrintersForMapStyle(Style))
+      if (!ThisModule->createLayoutInfosForMapStyle(Style))
         return false; // fail the link
     }
   } else {
     Config.raise(Diag::mapstyles_used) << Config.options().getDefaultMapStyle();
-    if (!ThisModule->createLayoutPrintersForMapStyle(
+    if (!ThisModule->createLayoutInfosForMapStyle(
             Config.options().getDefaultMapStyle()))
       return false; // fail the link
   }

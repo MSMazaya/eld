@@ -20,7 +20,7 @@
 #include "eld/Config/GeneralOptions.h"
 #include "eld/Core/Linker.h"
 #include "eld/Input/InputFile.h"
-#include "eld/LayoutMap/LayoutPrinter.h"
+#include "eld/LayoutMap/LayoutInfo.h"
 #include "eld/Plugin/PluginManager.h"
 #include "eld/PluginAPI/LinkerWrapper.h"
 #include "eld/Script/StrToken.h"
@@ -61,8 +61,8 @@ class LDSymbol;
 class Linker;
 class Plugin;
 class PluginData;
-class TextLayoutPrinter;
-class YamlLayoutPrinter;
+class TextLayoutInfo;
+class YamlLayoutInfo;
 class Relocation;
 class ExternCmd;
 class ScriptSymbol;
@@ -140,10 +140,10 @@ public:
 
 public:
   explicit Module(LinkerScript &CurScript, LinkerConfig &Config,
-                  LayoutPrinter *LayoutPrinter);
+                  LayoutInfo *LayoutInfo);
 
   Module(const std::string &Name, LinkerScript &CurScript, LinkerConfig &Config,
-         LayoutPrinter *LayoutPrinter);
+         LayoutInfo *LayoutInfo);
 
   ~Module();
 
@@ -319,7 +319,7 @@ public:
                                              std::string Name, uint32_t Type,
                                              uint32_t PFlag, uint32_t PAlign);
 
-  LayoutPrinter *getLayoutPrinter() { return ThisLayoutPrinter; }
+  LayoutInfo *getLayoutInfo() { return ThisLayoutInfo; }
 
   // Section symbols and all other symbols that live in the output.
   void recordSectionSymbol(ELFSection *S, ResolveInfo *R) {
@@ -507,14 +507,14 @@ public:
 
   llvm::StringRef saveString(llvm::StringRef S);
 
-  // ----------------------------LayoutPrinters ------------------------------
-  TextLayoutPrinter *getTextMapPrinter() const { return TextMapPrinter; }
+  // ----------------------------LayoutInfos ------------------------------
+  TextLayoutInfo *getTextMapPrinter() const { return TextMapPrinter; }
 
-  YamlLayoutPrinter *getYAMLMapPrinter() const { return YamlMapPrinter; }
+  YamlLayoutInfo *getYAMLMapPrinter() const { return YamlMapPrinter; }
 
-  bool createLayoutPrintersForMapStyle(llvm::StringRef);
+  bool createLayoutInfosForMapStyle(llvm::StringRef);
 
-  bool checkAndRaiseLayoutPrinterDiagEntry(eld::Expected<void> E) const;
+  bool checkAndRaiseLayoutInfoDiagEntry(eld::Expected<void> E) const;
 
   // --------------------------Plugin Memory Buffer Support -----------------
   char *getUninitBuffer(size_t Sz);
@@ -660,7 +660,7 @@ private:
   LDSymbol *DotSymbol = nullptr;
   Linker *Linker = nullptr;
   GNULDBackend *Backend = nullptr;
-  LayoutPrinter *ThisLayoutPrinter = nullptr;
+  LayoutInfo *ThisLayoutInfo = nullptr;
   bool Failure = false;
   bool UsesLto = false;
   plugin::LinkerWrapper::State State = plugin::LinkerWrapper::Unknown;
@@ -677,8 +677,8 @@ private:
   llvm::BumpPtrAllocator BAlloc;
   llvm::StringSaver Saver;
   // -----------------Multiple Map file generation support --------------
-  TextLayoutPrinter *TextMapPrinter = nullptr;
-  YamlLayoutPrinter *YamlMapPrinter = nullptr;
+  TextLayoutInfo *TextMapPrinter = nullptr;
+  YamlLayoutInfo *YamlMapPrinter = nullptr;
   // ----------------- Use/Def support for linker script --------------
   std::unordered_set<std::string> VisitedAssignments;
   // ----------------- Relocation Data set by plugins ------------------

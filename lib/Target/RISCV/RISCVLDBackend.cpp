@@ -156,7 +156,7 @@ bool RISCVLDBackend::initBRIslandFactory() { return true; }
 bool RISCVLDBackend::initStubFactory() { return true; }
 
 bool RISCVLDBackend::readSection(InputFile &pInput, ELFSection *S) {
-  eld::LayoutPrinter *P = m_Module.getLayoutPrinter();
+  eld::LayoutInfo *P = m_Module.getLayoutInfo();
   if (S->isCode()) {
     const char *Buf = pInput.getCopyForWrite(S->offset(), S->size());
     eld::RegionFragmentEx *F =
@@ -183,7 +183,7 @@ ELFSection *RISCVLDBackend::mergeSection(ELFSection *S) {
       AttributeFragment =
           make<RISCVAttributeFragment>(m_pRISCVAttributeSection);
       m_pRISCVAttributeSection->getFragmentList().push_back(AttributeFragment);
-      LayoutPrinter *printer = getModule().getLayoutPrinter();
+      LayoutInfo *printer = getModule().getLayoutInfo();
       if (printer)
         printer->recordFragment(m_pRISCVAttributeSection->getInputFile(),
                                 m_pRISCVAttributeSection, AttributeFragment);
@@ -1358,7 +1358,7 @@ void RISCVLDBackend::recordRelaxationStats(ELFSection &Section,
                                            size_t NumBytesDeleted,
                                            size_t NumBytesNotDeleted) {
   OutputSectionEntry *O = Section.getOutputSection();
-  eld::LayoutPrinter *P = m_Module.getLayoutPrinter();
+  eld::LayoutInfo *P = m_Module.getLayoutInfo();
   LinkStats *R = m_Stats[O];
   if (!m_ModuleStats) {
     m_ModuleStats = eld::make<RISCVRelaxationStats>();
@@ -1369,7 +1369,7 @@ void RISCVLDBackend::recordRelaxationStats(ELFSection &Section,
     R = eld::make<RISCVRelaxationStats>();
     m_Stats[O] = R;
     if (P)
-      getModule().getLayoutPrinter()->registerStats(O, R);
+      getModule().getLayoutInfo()->registerStats(O, R);
   }
   llvm::dyn_cast<RISCVRelaxationStats>(R)->addBytesDeleted(NumBytesDeleted);
   m_ModuleStats->addBytesDeleted(NumBytesDeleted);

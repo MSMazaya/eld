@@ -8,7 +8,7 @@
 #include "eld/Core/Module.h"
 #include "eld/Diagnostics/DiagnosticPrinter.h"
 #include "eld/Input/BitcodeFile.h"
-#include "eld/LayoutMap/TextLayoutPrinter.h"
+#include "eld/LayoutMap/TextLayoutInfo.h"
 #include "eld/Object/ObjectBuilder.h"
 #include "eld/Object/SectionMap.h"
 #include "eld/PluginAPI/LinkerPlugin.h"
@@ -94,11 +94,11 @@ BitcodeReader::~BitcodeReader() {}
 
 bool BitcodeReader::readInput(InputFile &InputFile,
                               plugin::LinkerPlugin *LTOPlugin) {
-  LayoutPrinter *printer = m_Builder.getModule().getLayoutPrinter();
+  LayoutInfo *printer = m_Builder.getModule().getLayoutInfo();
   if (printer) {
     std::string action =
         "LOAD " + InputFile.getInput()->decoratedPath() + " [Bitcode]";
-    printer->recordInputActions(LayoutPrinter::Load, InputFile.getInput());
+    printer->recordInputActions(LayoutInfo::Load, InputFile.getInput());
   }
 
   if (m_Builder.getModule().getPrinter()->traceFiles())

@@ -1,4 +1,4 @@
-//===- YamlLayoutPrinter.h-------------------------------------------------===//
+//===- YamlLayoutInfo.h-------------------------------------------------===//
 // Part of the eld Project, under the BSD License
 // See https://github.com/qualcomm/eld/LICENSE.txt for license information.
 // SPDX-License-Identifier: BSD-3-Clause
@@ -8,7 +8,7 @@
 #define ELD_LAYOUTMAP_YAMLLAYOUTPRINTER_H
 
 #include "eld/LayoutMap/LDYAML.h"
-#include "eld/LayoutMap/LayoutPrinter.h"
+#include "eld/LayoutMap/LayoutInfo.h"
 #include "eld/Support/MemoryArea.h"
 #include "eld/Support/MemoryRegion.h"
 #include "eld/Target/GNULDBackend.h"
@@ -23,10 +23,10 @@ struct CommandLineDefault {
   llvm::StringRef Desc;
 };
 
-class YamlLayoutPrinter {
+class YamlLayoutInfo {
 
 public:
-  YamlLayoutPrinter(LayoutPrinter *P);
+  YamlLayoutInfo(LayoutInfo *P);
 
   eld::Expected<void> init();
 
@@ -37,7 +37,7 @@ public:
 
   void printLayout(eld::Module &Module, GNULDBackend const &Backend);
 
-  ~YamlLayoutPrinter() {
+  ~YamlLayoutInfo() {
     delete LayoutFile;
     delete TrampolineLayoutFile;
   }
@@ -50,7 +50,7 @@ public:
 
   eld::LDYAML::LinkStats addStat(std::string S, uint64_t Count);
 
-  void addStats(LayoutPrinter::Stats &L,
+  void addStats(LayoutInfo::Stats &L,
                 std::vector<eld::LDYAML::LinkStats> &S);
 
   void insertCommons(std::vector<eld::LDYAML::Common> &Commons,
@@ -64,7 +64,7 @@ private:
   std::string CommandLine;
   llvm::raw_fd_ostream *LayoutFile;
   llvm::raw_fd_ostream *TrampolineLayoutFile;
-  LayoutPrinter *ThisLayoutPrinter = nullptr;
+  LayoutInfo *ThisLayoutInfo = nullptr;
 };
 
 } // namespace eld

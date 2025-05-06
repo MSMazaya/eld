@@ -143,7 +143,7 @@ public:
 
   virtual ~ELFSection() {}
 
-  // LayoutPrinter helper functions
+  // LayoutInfo helper functions
   static llvm::StringRef getELFTypeStr(llvm::StringRef Name, uint32_t Type);
 
   static std::string getELFPermissionsStr(uint32_t Permissions);
