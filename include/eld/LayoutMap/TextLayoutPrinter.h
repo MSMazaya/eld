@@ -1,4 +1,4 @@
-//===- TextLayoutInfo.h-------------------------------------------------===//
+//===- TextLayoutPrinter.h-------------------------------------------------===//
 // Part of the eld Project, under the BSD License
 // See https://github.com/qualcomm/eld/LICENSE.txt for license information.
 // SPDX-License-Identifier: BSD-3-Clause
@@ -23,9 +23,9 @@ namespace eld {
 
 class LinkerConfig;
 
-class TextLayoutInfo {
+class TextLayoutPrinter {
 public:
-  TextLayoutInfo(LayoutInfo *ThisLayoutInfo);
+  TextLayoutPrinter(LayoutInfo *ThisLayoutInfo);
 
   eld::Expected<void> init();
 
@@ -70,7 +70,7 @@ public:
 
   void printPluginInfo(eld::Module &M);
 
-  virtual ~TextLayoutInfo();
+  virtual ~TextLayoutPrinter();
 
   void destroy();
 

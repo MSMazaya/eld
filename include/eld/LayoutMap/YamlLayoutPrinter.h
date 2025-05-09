@@ -1,4 +1,4 @@
-//===- YamlLayoutInfo.h-------------------------------------------------===//
+//===- YamlLayoutPrinter.h-------------------------------------------------===//
 // Part of the eld Project, under the BSD License
 // See https://github.com/qualcomm/eld/LICENSE.txt for license information.
 // SPDX-License-Identifier: BSD-3-Clause
@@ -23,10 +23,10 @@ struct CommandLineDefault {
   llvm::StringRef Desc;
 };
 
-class YamlLayoutInfo {
+class YamlLayoutPrinter {
 
 public:
-  YamlLayoutInfo(LayoutInfo *P);
+  YamlLayoutPrinter(LayoutInfo *P);
 
   eld::Expected<void> init();
 
@@ -37,7 +37,7 @@ public:
 
   void printLayout(eld::Module &Module, GNULDBackend const &Backend);
 
-  ~YamlLayoutInfo() {
+  ~YamlLayoutPrinter() {
     delete LayoutFile;
     delete TrampolineLayoutFile;
   }

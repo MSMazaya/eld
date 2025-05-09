@@ -15,8 +15,8 @@
 #include "eld/Input/BitcodeFile.h"
 #include "eld/Input/ELFObjectFile.h"
 #include "eld/Input/InternalInputFile.h"
-#include "eld/LayoutMap/TextLayoutInfo.h"
-#include "eld/LayoutMap/YamlLayoutInfo.h"
+#include "eld/LayoutMap/TextLayoutPrinter.h"
+#include "eld/LayoutMap/YamlLayoutPrinter.h"
 #include "eld/Object/ObjectLinker.h"
 #include "eld/Plugin/PluginData.h"
 #include "eld/PluginAPI/PluginConfig.h"
@@ -746,13 +746,13 @@ bool Module::createLayoutInfosForMapStyle(llvm::StringRef MapStyle) {
   if (MapStyle.empty() || MapStyle.equals_insensitive("llvm") ||
       MapStyle.equals_insensitive("gnu") ||
       MapStyle.equals_insensitive("txt")) {
-    TextMapPrinter = eld::make<eld::TextLayoutInfo>(ThisLayoutInfo);
+    TextMapPrinter = eld::make<eld::TextLayoutPrinter>(ThisLayoutInfo);
     return checkAndRaiseLayoutInfoDiagEntry(TextMapPrinter->init());
   }
   // YAML
   if (MapStyle.equals_insensitive("yaml") ||
       MapStyle.equals_insensitive("compressed")) {
-    YamlMapPrinter = eld::make<eld::YamlLayoutInfo>(ThisLayoutInfo);
+    YamlMapPrinter = eld::make<eld::YamlLayoutPrinter>(ThisLayoutInfo);
     return checkAndRaiseLayoutInfoDiagEntry(YamlMapPrinter->init());
   }
   return true;

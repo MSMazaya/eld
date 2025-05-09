@@ -25,7 +25,7 @@
 #include "eld/Input/LinkerScriptFile.h"
 #include "eld/Input/ObjectFile.h"
 #include "eld/LayoutMap/LayoutInfo.h"
-#include "eld/LayoutMap/TextLayoutInfo.h"
+#include "eld/LayoutMap/TextLayoutPrinter.h"
 #include "eld/Object/GroupReader.h"
 #include "eld/Object/ObjectBuilder.h"
 #include "eld/Object/SectionMap.h"
@@ -619,7 +619,7 @@ void ObjectLinker::assignOutputSections(std::vector<eld::InputFile *> &Inputs) {
   collectEntrySections();
   LayoutInfo *LayoutInfo = ThisModule->getLayoutInfo();
   if (LayoutInfo && LayoutInfo->LayoutInfo::showInitialLayout()) {
-    TextLayoutInfo *TextMapPrinter = ThisModule->getTextMapPrinter();
+    TextLayoutPrinter *TextMapPrinter = ThisModule->getTextMapPrinter();
     if (TextMapPrinter) {
       // FIXME: ideally, we should not need 'updateMatchedSections' call here.
       // However, we need it because currently we do not maintain the list of
@@ -3203,7 +3203,7 @@ bool ObjectLinker::createLTOObject(void) {
 }
 
 void ObjectLinker::beginPostLTO() {
-  TextLayoutInfo *Printer = ThisModule->getTextMapPrinter();
+  TextLayoutPrinter *Printer = ThisModule->getTextMapPrinter();
   if (Printer) {
     Printer->addLayoutMessage("Pre-LTO Map records\n");
     Printer->printArchiveRecords(*ThisModule);

@@ -61,8 +61,8 @@ class LDSymbol;
 class Linker;
 class Plugin;
 class PluginData;
-class TextLayoutInfo;
-class YamlLayoutInfo;
+class TextLayoutPrinter;
+class YamlLayoutPrinter;
 class Relocation;
 class ExternCmd;
 class ScriptSymbol;
@@ -508,9 +508,9 @@ public:
   llvm::StringRef saveString(llvm::StringRef S);
 
   // ----------------------------LayoutInfos ------------------------------
-  TextLayoutInfo *getTextMapPrinter() const { return TextMapPrinter; }
+  TextLayoutPrinter *getTextMapPrinter() const { return TextMapPrinter; }
 
-  YamlLayoutInfo *getYAMLMapPrinter() const { return YamlMapPrinter; }
+  YamlLayoutPrinter *getYAMLMapPrinter() const { return YamlMapPrinter; }
 
   bool createLayoutInfosForMapStyle(llvm::StringRef);
 
@@ -677,8 +677,8 @@ private:
   llvm::BumpPtrAllocator BAlloc;
   llvm::StringSaver Saver;
   // -----------------Multiple Map file generation support --------------
-  TextLayoutInfo *TextMapPrinter = nullptr;
-  YamlLayoutInfo *YamlMapPrinter = nullptr;
+  TextLayoutPrinter *TextMapPrinter = nullptr;
+  YamlLayoutPrinter *YamlMapPrinter = nullptr;
   // ----------------- Use/Def support for linker script --------------
   std::unordered_set<std::string> VisitedAssignments;
   // ----------------- Relocation Data set by plugins ------------------

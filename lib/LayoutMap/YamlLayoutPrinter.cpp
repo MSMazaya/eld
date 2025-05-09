@@ -1,11 +1,11 @@
-//===- YamlLayoutInfo.cpp-----------------------------------------------===//
+//===- YamlLayoutPrinter.cpp-----------------------------------------------===//
 // Part of the eld Project, under the BSD License
 // See https://github.com/qualcomm/eld/LICENSE.txt for license information.
 // SPDX-License-Identifier: BSD-3-Clause
 //===----------------------------------------------------------------------===//
 
 
-#include "eld/LayoutMap/YamlLayoutInfo.h"
+#include "eld/LayoutMap/YamlLayoutPrinter.h"
 #include "eld/Config/Version.h"
 #include "eld/Core/Module.h"
 #include "eld/Input/ArchiveMemberInput.h"
@@ -26,11 +26,11 @@
 using namespace eld;
 using namespace llvm;
 
-YamlLayoutInfo::YamlLayoutInfo(LayoutInfo *P)
+YamlLayoutPrinter::YamlLayoutPrinter(LayoutInfo *P)
     : LayoutFile(nullptr), TrampolineLayoutFile(nullptr), ThisLayoutInfo(P) {
 }
 
-eld::Expected<void> YamlLayoutInfo::init() {
+eld::Expected<void> YamlLayoutPrinter::init() {
   if (ThisLayoutInfo->getConfig().options().printMap())
     return {};
   std::string SuffixExtension = "";
@@ -70,7 +70,7 @@ eld::Expected<void> YamlLayoutInfo::init() {
   return {};
 }
 
-llvm::raw_ostream &YamlLayoutInfo::outputStream() const {
+llvm::raw_ostream &YamlLayoutPrinter::outputStream() const {
   if (LayoutFile) {
     LayoutFile->flush();
     return *LayoutFile;
@@ -78,7 +78,7 @@ llvm::raw_ostream &YamlLayoutInfo::outputStream() const {
   return llvm::errs();
 }
 
-void YamlLayoutInfo::insertCommons(std::vector<eld::LDYAML::Common> &Commons,
+void YamlLayoutPrinter::insertCommons(std::vector<eld::LDYAML::Common> &Commons,
                                       const std::vector<ResolveInfo *> &Infos) {
   for (auto &I : Infos) {
     eld::LDYAML::Common Common;
@@ -94,7 +94,7 @@ void YamlLayoutInfo::insertCommons(std::vector<eld::LDYAML::Common> &Commons,
   }
 }
 
-void YamlLayoutInfo::addInputs(
+void YamlLayoutPrinter::addInputs(
     std::vector<std::shared_ptr<eld::LDYAML::InputFile>> &Inputs,
     eld::Module &Module) {
   InputBuilder &InputBuilder = Module.getIRBuilder()->getInputBuilder();
@@ -128,7 +128,7 @@ void YamlLayoutInfo::addInputs(
   }
 }
 
-eld::LDYAML::LinkStats YamlLayoutInfo::addStat(std::string S,
+eld::LDYAML::LinkStats YamlLayoutPrinter::addStat(std::string S,
                                                   uint64_t Count) {
   eld::LDYAML::LinkStats L;
   L.Name = S;
@@ -136,7 +136,7 @@ eld::LDYAML::LinkStats YamlLayoutInfo::addStat(std::string S,
   return L;
 }
 
-void YamlLayoutInfo::addStats(LayoutInfo::Stats &L,
+void YamlLayoutPrinter::addStats(LayoutInfo::Stats &L,
                                  std::vector<eld::LDYAML::LinkStats> &S) {
   S.push_back(addStat("ObjectFiles", L.NumElfObjectFiles));
   S.push_back(addStat("LinkerScripts", L.NumLinkerScripts));
@@ -161,7 +161,7 @@ void YamlLayoutInfo::addStats(LayoutInfo::Stats &L,
 }
 
 eld::LDYAML::Module
-eld::YamlLayoutInfo::buildYaml(eld::Module &Module,
+eld::YamlLayoutPrinter::buildYaml(eld::Module &Module,
                                   GNULDBackend const &Backend) {
   bool HasSectionsCmd = Module.getScript().linkerScriptHasSectionsCommand();
   eld::LDYAML::Module Result;
@@ -516,7 +516,7 @@ eld::YamlLayoutInfo::buildYaml(eld::Module &Module,
   return Result;
 }
 
-void eld::YamlLayoutInfo::getTrampolineMap(
+void eld::YamlLayoutPrinter::getTrampolineMap(
     eld::Module &Module, std::vector<eld::LDYAML::TrampolineInfo> &R) {
   for (auto &OutputSection : Module.getScript().sectionMap()) {
     eld::LDYAML::TrampolineInfo TInfo;
@@ -628,7 +628,7 @@ void eld::YamlLayoutInfo::getTrampolineMap(
   }
 }
 
-uint64_t YamlLayoutInfo::getEntryAddress(eld::Module const &CurModule,
+uint64_t YamlLayoutPrinter::getEntryAddress(eld::Module const &CurModule,
                                             GNULDBackend const &Backend) {
   /// getEntryPoint
   llvm::StringRef EntryName = Backend.getEntry();
@@ -648,7 +648,7 @@ uint64_t YamlLayoutInfo::getEntryAddress(eld::Module const &CurModule,
   return Result;
 }
 
-void YamlLayoutInfo::printLayout(eld::Module &Module,
+void YamlLayoutPrinter::printLayout(eld::Module &Module,
                                     GNULDBackend const &Backend) {
   DiagnosticEngine *DiagEngine = Backend.config().getDiagEngine();
   // Open Trampoline Map file.

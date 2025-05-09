@@ -8,7 +8,7 @@
 #include "eld/Core/Module.h"
 #include "eld/Diagnostics/DiagnosticPrinter.h"
 #include "eld/Input/BitcodeFile.h"
-#include "eld/LayoutMap/TextLayoutInfo.h"
+#include "eld/LayoutMap/TextLayoutPrinter.h"
 #include "eld/Object/ObjectBuilder.h"
 #include "eld/Object/SectionMap.h"
 #include "eld/PluginAPI/LinkerPlugin.h"

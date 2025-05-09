@@ -31,8 +31,8 @@
 #include "eld/Input/ELFObjectFile.h"
 #include "eld/Input/InputTree.h"
 #include "eld/LayoutMap/LayoutInfo.h"
-#include "eld/LayoutMap/TextLayoutInfo.h"
-#include "eld/LayoutMap/YamlLayoutInfo.h"
+#include "eld/LayoutMap/TextLayoutPrinter.h"
+#include "eld/LayoutMap/YamlLayoutPrinter.h"
 #include "eld/Object/ObjectBuilder.h"
 #include "eld/Object/ObjectLinker.h"
 #include "eld/Object/ScriptMemoryRegion.h"
@@ -3415,7 +3415,7 @@ bool GNULDBackend::printLayout() {
   eld::RegisterTimer T("Emit Map File", "Diagnostics",
                        m_Module.getConfig().options().printTimingStats());
   // Emit Map
-  TextLayoutInfo *printer = m_Module.getTextMapPrinter();
+  TextLayoutPrinter *printer = m_Module.getTextMapPrinter();
   if (printer) {
     printer->printMapFile(m_Module);
     printer->destroy();
@@ -3426,7 +3426,7 @@ bool GNULDBackend::printLayout() {
     printCref(true);
 
   // Emit YAML Map
-  YamlLayoutInfo *YAMLMapPrinter = m_Module.getYAMLMapPrinter();
+  YamlLayoutPrinter *YAMLMapPrinter = m_Module.getYAMLMapPrinter();
   if (YAMLMapPrinter) {
     YAMLMapPrinter->printLayout(m_Module, *this);
   }
@@ -3467,7 +3467,7 @@ GNULDBackend::getPaddingBetweenFragments(ELFSection *section,
 
 void GNULDBackend::printCref(bool pIsPostLTO) const {
   llvm::raw_ostream *stream;
-  TextLayoutInfo *printer = m_Module.getTextMapPrinter();
+  TextLayoutPrinter *printer = m_Module.getTextMapPrinter();
   if (printer)
     stream = &(printer->outputStream());
   else

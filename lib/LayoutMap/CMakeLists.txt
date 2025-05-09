@@ -1,5 +1,5 @@
-add_llvm_library(ELDLayout LayoutInfo.cpp LDYAML.cpp TextLayoutInfo.cpp
-                 YamlLayoutInfo.cpp)
+add_llvm_library(ELDLayout LayoutInfo.cpp LDYAML.cpp TextLayoutPrinter.cpp
+                 YamlLayoutPrinter.cpp)
 
 target_link_libraries(
   ELDLayout
